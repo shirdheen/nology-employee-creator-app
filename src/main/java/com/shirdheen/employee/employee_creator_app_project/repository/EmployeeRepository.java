@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     //Find employee by email
-    Optional<Employee> findbyEmail(String email);
+    Optional<Employee> findByEmail(String email);
 
     // Check if an email already exists
     boolean existsByEmail(String email);
