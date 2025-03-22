@@ -2,6 +2,7 @@ package com.shirdheen.employee.employee_creator_app_project.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shirdheen.employee.employee_creator_app_project.dto.EmployeeDto;
 import com.shirdheen.employee.employee_creator_app_project.model.ContractType;
 import com.shirdheen.employee.employee_creator_app_project.model.Employee;
 import com.shirdheen.employee.employee_creator_app_project.model.EmploymentType;
@@ -33,40 +35,42 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
+    public ResponseEntity<List<EmployeeDto>> getAllEmployees() {
         List<Employee> employees = employeeService.getAllEmployees();
-        return ResponseEntity.ok(employees);
+        List<EmployeeDto> dtos = employees.stream().map(EmployeeDto::new).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
-    @GetMapping("/employment-type/{type}")
-    public ResponseEntity<List<Employee>> getEmployeesByEmploymentType(@PathVariable EmploymentType type) {
-        return ResponseEntity.ok(employeeService.getEmployeesByEmploymentType(type));
-    }
+    @GetMapping("/filter")
+    public ResponseEntity<List<EmployeeDto>> filterEmployees(
+        @RequestParam(required = false) EmploymentType employmentType,
+        @RequestParam(required = false) ContractType contractType) {
+            List<Employee> filteredEmployees = employeeService.filterEmployees(employmentType, contractType);
+            List<EmployeeDto> dtos = filteredEmployees.stream().map(EmployeeDto::new).toList();
 
-    @GetMapping("/contract-type/{type}")
-    public ResponseEntity<List<Employee>> getEmployeesByContractType(@PathVariable ContractType type) {
-        return ResponseEntity.ok(employeeService.getEmployeesByContractType(type));
-    }
+            return ResponseEntity.ok(dtos);
+        }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Employee>> searchEmployees(@RequestParam String keyword) {
-        return ResponseEntity.ok(employeeService.searchEmployees(keyword));
+    public ResponseEntity<List<EmployeeDto>> searchEmployees(@RequestParam String keyword) {
+        List<EmployeeDto> dtos = employeeService.searchEmployees(keyword).stream().map(EmployeeDto::new).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping
-    public ResponseEntity<?> createEmployee(@RequestBody Employee employee) {
+    public ResponseEntity<EmployeeDto> createEmployee(@RequestBody Employee employee) {
         Employee savedEmployee = employeeService.createEmployee(employee);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedEmployee);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new EmployeeDto(savedEmployee));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+    public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         Employee updatedEmployee = employeeService.updateEmployee(id, updates);
-        return ResponseEntity.ok(updatedEmployee);
+        return ResponseEntity.ok(new EmployeeDto(updatedEmployee));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
+    public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.ok("Employee with ID " + id + " deleted successfully.");
     }

@@ -1,6 +1,8 @@
 package com.shirdheen.employee.employee_creator_app_project.model;
 
+import java.beans.Transient;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -79,5 +81,15 @@ public class Employee {
 
     @Min(value = 1, message = "Hours per week must be greater than 0")
     private Integer hoursPerWeek;
+
+    @Transient
+    public boolean isOnProbation() {
+        return this.startDate != null && ChronoUnit.MONTHS.between(this.startDate, LocalDate.now()) < 3;
+    }
+
+    @Transient
+    public boolean hasWorkAnniversaryThisMonth() {
+        return this.startDate != null && this.startDate.getMonth() == LocalDate.now().getMonth();
+    }
 
 }

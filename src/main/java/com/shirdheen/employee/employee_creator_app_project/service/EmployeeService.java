@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.el.util.ReflectionUtil;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
@@ -32,12 +31,16 @@ public class EmployeeService {
         return employeeRepository.findAll(Sort.by(Sort.Direction.ASC, "lastName"));
     }
 
-    public List<Employee> getEmployeesByEmploymentType(EmploymentType type) {
-        return employeeRepository.findByEmploymentType(type);
-    }
-
-    public List<Employee> getEmployeesByContractType(ContractType type) {
-        return employeeRepository.findByContractType(type);
+    public List<Employee> filterEmployees(EmploymentType employmentType, ContractType contractType) {
+        if (employmentType != null && contractType != null) {
+            return employeeRepository.findByEmploymentTypeAndContractType(employmentType, contractType);
+        } else if (employmentType != null) {
+            return employeeRepository.findByEmploymentType(employmentType);
+        } else if (contractType != null) {
+            return employeeRepository.findByContractType(contractType);
+        } else {
+            return getAllEmployees();
+        }
     }
 
     public List<Employee> searchEmployees(String keyword) {

@@ -1,7 +1,6 @@
 package com.shirdheen.employee.employee_creator_app_project.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,6 +23,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     
     // Find all employees by employment type
     List<Employee> findByEmploymentType(EmploymentType employmentType);
+
+    List<Employee> findByEmploymentTypeAndContractType(EmploymentType employmentType, ContractType contractType);
 
     @Query("SELECT e FROM Employee e WHERE LOWER(e.firstName) LIKE LOWER(CONCAT('%', : keyword, '%')) " + "OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))" + "OR LOWER(e.email) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Employee> searchEmployees(@Param("keyword") String keyword);
