@@ -1,0 +1,94 @@
+.employeeFormContainer {
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border: 1px solid #f4c542;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  font-family: "Montserrat";
+
+  h2 {
+    font-size: 2rem;
+    color: #34495e;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    input,
+    select {
+      padding: 10px 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: "Roboto";
+
+      &:focus {
+        outline: none;
+        border-color: #f4c542;
+        box-shadow: 0 0 0 2px rgba(244, 197, 66, 0.2);
+      }
+    }
+
+    label {
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin-top: 8px;
+      padding-bottom: 10px;
+      color: #34495e;
+    }
+
+    p {
+      color: #e67e22;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    .formRow {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .checkboxField {
+      .checkboxWrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+
+    .formButtons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+
+      button {
+        padding: 10px 16px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: "Montserrat";
+
+        &:first-of-type {
+          background-color: #f4c542;
+          color: #34495e;
+        }
+
+        &:last-of-type {
+          background-color: #ecf0f1;
+          color: #34495e;
+        }
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+}

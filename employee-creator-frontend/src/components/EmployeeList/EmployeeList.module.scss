@@ -53,10 +53,27 @@
     }
 
     .employeeInfo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .bannerSection {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 0.5rem;
+      }
+
       strong {
         font-size: 1.25rem;
         font-family: "Montserrat";
         color: #34495e;
+      }
+
+      p {
+        font-size: 1rem;
+        font-family: "Roboto";
+        color: #34495e;
+        margin: 0px;
       }
     }
 
@@ -91,5 +108,32 @@
         color: #34495e;
       }
     }
+  }
+
+  .ongoingBadge {
+    background-color: #1e8449;
+    color: #fcfcfc;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-family: "Montserrat";
+  }
+
+  .anniversaryBadge {
+    background-color: #f4c542;
+    color: #34495e;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-family: "Montserrat";
+  }
+
+  .probationBadge {
+    background-color: #e67e22;
+    color: #fcfcfc;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-family: "Montserrat";
   }
 }

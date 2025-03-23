@@ -43,17 +43,18 @@ public class EmployeeController {
 
     @GetMapping("/filter")
     public ResponseEntity<List<EmployeeDto>> filterEmployees(
-        @RequestParam(required = false) EmploymentType employmentType,
-        @RequestParam(required = false) ContractType contractType) {
-            List<Employee> filteredEmployees = employeeService.filterEmployees(employmentType, contractType);
-            List<EmployeeDto> dtos = filteredEmployees.stream().map(EmployeeDto::new).toList();
+            @RequestParam(required = false) EmploymentType employmentType,
+            @RequestParam(required = false) ContractType contractType) {
+        List<Employee> filteredEmployees = employeeService.filterEmployees(employmentType, contractType);
+        List<EmployeeDto> dtos = filteredEmployees.stream().map(EmployeeDto::new).toList();
 
-            return ResponseEntity.ok(dtos);
-        }
+        return ResponseEntity.ok(dtos);
+    }
 
     @GetMapping("/search")
     public ResponseEntity<List<EmployeeDto>> searchEmployees(@RequestParam String keyword) {
-        List<EmployeeDto> dtos = employeeService.searchEmployees(keyword).stream().map(EmployeeDto::new).collect(Collectors.toList());
+        List<EmployeeDto> dtos = employeeService.searchEmployees(keyword).stream().map(EmployeeDto::new)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
 
@@ -65,6 +66,10 @@ public class EmployeeController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+
+        System.out.println("Updating employee with ID: " + id);
+        System.out.println("Fields to update: " + updates.keySet());
+
         Employee updatedEmployee = employeeService.updateEmployee(id, updates);
         return ResponseEntity.ok(new EmployeeDto(updatedEmployee));
     }

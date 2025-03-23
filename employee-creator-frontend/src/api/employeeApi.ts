@@ -16,6 +16,9 @@ export interface Employee {
   employmentType: "FULL_TIME" | "PART_TIME";
   salary: number;
   hoursPerWeek: number;
+
+  onProbation?: boolean;
+  hasWorkAnniversary?: boolean;
 }
 
 const API_URL = "http://localhost:8080/api/employees";
@@ -46,6 +49,46 @@ export const useAddEmployee = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     }, // React Query refetches the list of employees to reflect the change
+    onError: (error: any) => {
+      const message = getErrorMessage(error);
+      console.error("Error adding employee: ", message);
+      alert(message);
+    },
+  });
+};
+
+export const useUpdateEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: number;
+      updates: Partial<Employee>;
+    }) => {
+      console.log("Attempting to update employee with ID:", id);
+      console.log("Update payload:", updates);
+      console.log("PATCH URL:", `${API_URL}/${id}`);
+
+      const response = await axios.patch(`${API_URL}/${id}`, updates, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      console.log("Mutation succeeded, invalidating employee query cache");
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+    },
+
+    onError: (error: any) => {
+      const message = getErrorMessage(error);
+      console.error("Error updating employee: ", message);
+      alert(message);
+    },
   });
 };
 
@@ -64,5 +107,19 @@ export const useDeleteEmployee = () => {
           oldData ? oldData.filter((emp) => emp.id !== id) : []
       );
     },
+    onError: (error: any) => {
+      const message = getErrorMessage(error);
+      console.error("Error deleting employee: ", message);
+      alert(message);
+    },
   });
+};
+
+const getErrorMessage = (error: any): string => {
+  return (
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.message ||
+    "Something went wrong"
+  );
 };

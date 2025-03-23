@@ -1,14 +1,15 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { Navigate, Route, Routes } from "react-router-dom";
 import EmployeeList from "./components/EmployeeList/EmployeeList";
+import EmployeeForm from "./components/EmployeeForm/EmployeeForm";
 
 function App() {
   return (
     <>
-      <div>
-        <EmployeeList />
-      </div>
+      <Routes>
+        <Route path="/" element={<Navigate to="/employees" replace />} />
+        <Route path="/employees" element={<EmployeeList />} />
+        <Route path="/employee-form" element={<EmployeeForm />} />
+      </Routes>
     </>
   );
 }

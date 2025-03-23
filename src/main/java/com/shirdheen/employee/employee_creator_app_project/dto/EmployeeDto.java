@@ -35,6 +35,8 @@ public class EmployeeDto {
     private boolean onProbation;
     private boolean hasWorkAnniversary;
 
+    private boolean ongoing;
+
     public EmployeeDto (Employee employee) {
         this.id = employee.getId();
         this.firstName = employee.getFirstName();
@@ -56,5 +58,7 @@ public class EmployeeDto {
 
         this.onProbation = employee.isOnProbation();
         this.hasWorkAnniversary = employee.hasWorkAnniversaryThisMonth();
+
+        this.ongoing = employee.isOngoing();
     }
 }

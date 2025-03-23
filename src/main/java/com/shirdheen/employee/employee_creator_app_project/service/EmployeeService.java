@@ -1,6 +1,7 @@
 package com.shirdheen.employee.employee_creator_app_project.service;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,7 +73,50 @@ public class EmployeeService {
             try {
                 Field field = Employee.class.getDeclaredField(key);
                 field.setAccessible(true);
-                ReflectionUtils.setField(field, existingEmployee, value);
+
+                Class<?> fieldType = field.getType();
+
+                Object convertedValue = value;
+                
+                // Convert enums
+                if (fieldType.isEnum() && value instanceof String) {
+                    @SuppressWarnings("unchecked")
+                    Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) fieldType;
+                    @SuppressWarnings("unchecked")
+                    Object enumValue  = Enum.valueOf(enumClass.asSubclass(Enum.class), value.toString());
+                    convertedValue = enumValue;
+                }
+
+                // Convert LocalDate
+                if (fieldType.equals(LocalDate.class) && value instanceof String) {
+                    convertedValue = LocalDate.parse(value.toString());
+                }
+
+                // Convert Integer
+                if ((fieldType.equals(Integer.class) || fieldType.equals(int.class))) {
+                    if (value instanceof Number) {
+                        convertedValue = ((Number) value).intValue();
+                    } else if (value instanceof String) {
+                        convertedValue = Integer.parseInt((String) value);
+                    }
+                }
+
+                if ((fieldType.equals(Double.class) || fieldType.equals(double.class))) {
+                    if (value instanceof Number) {
+                        convertedValue = ((Number) value).doubleValue();
+                    } else if (value instanceof String) {
+                        convertedValue = Double.parseDouble((String) value);
+                    } else {
+                        throw new RuntimeException("Unsupported type for salary: " + value.getClass().getName());
+                    }
+                }
+
+                if ((fieldType.equals(Boolean.class) || fieldType.equals(boolean.class)) && value instanceof Boolean) {
+                    convertedValue = value;
+                }
+
+                ReflectionUtils.setField(field, existingEmployee, convertedValue);
+
             } catch (NoSuchFieldException e) {
                 throw new IllegalArgumentException("Field '" + key + "' not found in Employee entity.");
             } catch (IllegalArgumentException e) {
