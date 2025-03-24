@@ -1,12 +1,27 @@
 import { useNavigate } from "react-router-dom";
-import { useDeleteEmployee, useFetchEmployees } from "../../api/employeeApi";
+import {
+  Employee,
+  useDeleteEmployee,
+  useFetchEmployees,
+  useFilterEmployees,
+} from "../../api/employeeApi";
 import styles from "./EmployeeList.module.scss";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedEmployee } from "../../redux/slices/employeeSlice";
+import { useEffect, useState } from "react";
+import LoadingSpinner from "../../subcomponents/LoadingSpinner/LoadingSpinner";
 
 const EmployeeList = () => {
+  const [employmentType, setEmploymentType] = useState<string>("");
+  const [contractType, setContractType] = useState<string>("");
+
   const { data: employees, isLoading, error } = useFetchEmployees();
   const deleteEmployee = useDeleteEmployee();
+  const {
+    data: filteredEmployees,
+    refetch: refetchFiltered,
+    isFetching,
+  } = useFilterEmployees({ employmentType, contractType });
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -24,23 +39,58 @@ const EmployeeList = () => {
 
   const handleEdit = (employee: any) => {
     dispatch(setSelectedEmployee(employee));
-    navigate("/employee-form");
+    navigate(`/employee-form/${employee.id}`);
   };
 
-  if (isLoading) return <p>Loading employees...</p>;
+  useEffect(() => {
+    refetchFiltered();
+  }, [employmentType, contractType, refetchFiltered]);
+
+  const employeesToRender =
+    employmentType || contractType ? filteredEmployees : employees;
+
+  if (isLoading) return <LoadingSpinner />;
+
   if (error)
-    return <p style={{ color: "red" }}>Oops, error fetching employees.</p>;
+    return (
+      <p className={styles.errorMessage}>Oops, error fetching employees.</p>
+    );
 
   return (
     <div className={styles.employeeList}>
       <h2>Employee List</h2>
+
+      <div className={styles.filterControls}>
+        <select
+          value={employmentType}
+          onChange={(e) => setEmploymentType(e.target.value)}
+        >
+          <option value="">All employment types</option>
+          <option value="FULL_TIME">Full-time</option>
+          <option value="PART_TIME">Part-time</option>
+        </select>
+
+        <select
+          value={contractType}
+          onChange={(e) => setContractType(e.target.value)}
+        >
+          <option value="">All contract types</option>
+          <option value="PERMANENT">Permanent</option>
+          <option value="CONTRACT">Contract</option>
+        </select>
+      </div>
+
       <button className={styles.addEmployeeButton} onClick={handleAdd}>
         Add employee
       </button>
 
-      {employees && employees.length > 0 ? (
+      {isLoading ? (
+        <p>Loading employees...</p>
+      ) : error ? (
+        <p style={{ color: "red" }}>Oops, error fetching employees.</p>
+      ) : employeesToRender && employeesToRender.length > 0 ? (
         <div className={styles.employeeCards}>
-          {employees.map((employee) => (
+          {employeesToRender.map((employee) => (
             <div key={employee.id} className={styles.employeeCard}>
               <div className={styles.employeeInfo}>
                 <div className={styles.bannerSection}>
@@ -52,11 +102,16 @@ const EmployeeList = () => {
                       🎉 Work Anniversary
                     </span>
                   )}
-
                   {employee.onProbation && (
                     <span className={styles.probationBadge}>🗒️ Probation</span>
                   )}
+                  {getContractExpiryBanner(employee) && (
+                    <span className={styles.contractExpiryBadge}>
+                      {getContractExpiryBanner(employee)}
+                    </span>
+                  )}
                 </div>
+
                 <strong>
                   {employee.firstName} {employee.lastName}
                 </strong>
@@ -110,6 +165,23 @@ const calculateYears = (
   const monthStr = months > 0 ? `${months} month${months > 1 ? "s" : ""}` : "";
 
   return [yearStr, monthStr].filter(Boolean).join(" ");
+};
+
+const getContractExpiryBanner = (employee: Employee): string | null => {
+  if (employee.contractType !== "CONTRACT") return null;
+  if (!employee.finishDate) return null;
+
+  const today = new Date();
+  const finishDate = new Date(employee.finishDate);
+  // getTime() returns the time in milliseconds
+  const diffTime = finishDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return "❌ Contract Expired";
+  } else {
+    return `📅 Contract expires in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+  }
 };
 
 export default EmployeeList;

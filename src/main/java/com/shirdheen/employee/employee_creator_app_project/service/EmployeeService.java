@@ -32,6 +32,10 @@ public class EmployeeService {
         return employeeRepository.findAll(Sort.by(Sort.Direction.ASC, "lastName"));
     }
 
+    public Employee getEmployeeById(Long id) {
+        return employeeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + id));
+    }
+
     public List<Employee> filterEmployees(EmploymentType employmentType, ContractType contractType) {
         if (employmentType != null && contractType != null) {
             return employeeRepository.findByEmploymentTypeAndContractType(employmentType, contractType);

@@ -9,6 +9,7 @@ function App() {
         <Route path="/" element={<Navigate to="/employees" replace />} />
         <Route path="/employees" element={<EmployeeList />} />
         <Route path="/employee-form" element={<EmployeeForm />} />
+        <Route path="/employee-form/:id" element={<EmployeeForm />} />
       </Routes>
     </>
   );

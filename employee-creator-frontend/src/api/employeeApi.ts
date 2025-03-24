@@ -21,6 +21,11 @@ export interface Employee {
   hasWorkAnniversary?: boolean;
 }
 
+interface FilterParams {
+  employmentType?: string;
+  contractType?: string;
+}
+
 const API_URL = "http://localhost:8080/api/employees";
 
 // Fetch all employees
@@ -34,6 +39,18 @@ export const useFetchEmployees = () => {
       return response.data;
     }, // Function that makes the API request (uses axios)
     staleTime: 5000, // Won't refetch the data for 5 seconds after it's first fetched
+  });
+};
+
+export const useFetchEmployeeById = (id: number | undefined) => {
+  return useQuery({
+    queryKey: ["employee", id],
+    queryFn: async () => {
+      const response = await axios.get<Employee>(`${API_URL}/${id}`);
+      return response.data;
+    },
+    enabled: !!id, // Only runss if id is defined
+    staleTime: 5000,
   });
 };
 
@@ -115,11 +132,38 @@ export const useDeleteEmployee = () => {
   });
 };
 
+export const useFilterEmployees = (filters: FilterParams) => {
+  return useQuery({
+    queryKey: ["filteredEmployees", filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+
+      if (filters.employmentType) {
+        params.append("employmentType", filters.employmentType);
+      }
+      if (filters.contractType) {
+        params.append("contractType", filters.contractType);
+      }
+
+      const response = await axios.get<Employee[]>(
+        `${API_URL}/filter?${params.toString()}`
+      );
+      return response.data;
+    },
+    enabled: false, // Will only run manually
+  });
+};
+
 const getErrorMessage = (error: any): string => {
-  return (
-    error?.response?.data?.message ||
-    error?.response?.data?.error ||
-    error?.message ||
-    "Something went wrong"
-  );
+  const data = error?.response?.data;
+
+  if (data?.validationErrors) {
+    const messages = Object.values(data.validationErrors);
+    if (messages.length > 0) {
+      return String(messages[0]);
+    }
+  }
+  if (data?.error) return data.error;
+
+  return error?.message || "Something went wrong";
 };

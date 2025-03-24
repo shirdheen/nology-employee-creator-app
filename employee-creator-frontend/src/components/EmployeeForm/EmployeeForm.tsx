@@ -1,13 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Employee,
   useAddEmployee,
+  useFetchEmployeeById,
   useUpdateEmployee,
 } from "../../api/employeeApi";
 import { useAppSelector } from "../../redux/hooks";
 import { useForm } from "react-hook-form";
 import styles from "./EmployeeForm.module.scss";
 import { useEffect } from "react";
+import LoadingSpinner from "../../subcomponents/LoadingSpinner/LoadingSpinner";
 
 const defaultValues: Partial<Employee> = {
   firstName: "",
@@ -27,9 +29,15 @@ const defaultValues: Partial<Employee> = {
 
 const EmployeeForm = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const numericId = id ? parseInt(id, 10) : undefined;
+
   const selectedEmployee = useAppSelector(
     (state) => state.employees.selectedEmployee
   );
+
+  const { data: fetchedEmployee, isLoading: isFetchingEmployee } =
+    useFetchEmployeeById(numericId);
 
   const {
     register,
@@ -41,6 +49,12 @@ const EmployeeForm = () => {
   } = useForm<Employee>({
     defaultValues: selectedEmployee || defaultValues,
   });
+
+  useEffect(() => {
+    if (!selectedEmployee && fetchedEmployee) {
+      reset(fetchedEmployee);
+    }
+  }, [fetchedEmployee, selectedEmployee, reset]);
 
   const contractType = watch("contractType");
 
@@ -60,10 +74,9 @@ const EmployeeForm = () => {
       Object.entries(cleaned).filter(([_, v]) => v !== undefined)
     );
 
-    if (selectedEmployee) {
-      console.log("Updating employee with ID:", selectedEmployee.id);
+    if (numericId) {
       updateEmployeeMutation.mutate(
-        { id: selectedEmployee.id, updates: filteredUpdates },
+        { id: numericId, updates: filteredUpdates },
         {
           onSuccess: () => {
             console.log("Employee updated successfully.");
@@ -86,9 +99,11 @@ const EmployeeForm = () => {
     navigate("/employees");
   };
 
+  if (numericId && isFetchingEmployee) return <LoadingSpinner />;
+
   return (
     <div className={styles.employeeFormContainer}>
-      <h2>{selectedEmployee ? "Edit Employee" : "Add New Employee"} </h2>
+      <h2>{numericId ? "Edit Employee" : "Add New Employee"} </h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className={styles.formRow}>
