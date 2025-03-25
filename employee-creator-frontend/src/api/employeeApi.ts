@@ -66,11 +66,6 @@ export const useAddEmployee = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     }, // React Query refetches the list of employees to reflect the change
-    onError: (error: any) => {
-      const message = getErrorMessage(error);
-      console.error("Error adding employee: ", message);
-      alert(message);
-    },
   });
 };
 
@@ -99,12 +94,6 @@ export const useUpdateEmployee = () => {
     onSuccess: () => {
       console.log("Mutation succeeded, invalidating employee query cache");
       queryClient.invalidateQueries({ queryKey: ["employees"] });
-    },
-
-    onError: (error: any) => {
-      const message = getErrorMessage(error);
-      console.error("Error updating employee: ", message);
-      alert(message);
     },
   });
 };
@@ -163,7 +152,24 @@ const getErrorMessage = (error: any): string => {
       return String(messages[0]);
     }
   }
+
+  if (data?.message) return data.message;
   if (data?.error) return data.error;
 
   return error?.message || "Something went wrong";
+};
+
+export const getAllValidationMessages = (error: any): string[] => {
+  const data = error?.response?.data;
+  const validationErrors = data?.validationErrors;
+
+  if (validationErrors) {
+    return Object.values(validationErrors).map(String);
+  }
+
+  if (data?.message) return [data.message];
+  if (data?.error) return [data.error];
+  if (error?.message) return [error.message];
+
+  return ["Something went wrong"];
 };

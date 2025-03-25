@@ -17,33 +17,34 @@ import jakarta.validation.ConstraintViolationException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Handling validation errors (from @Valid)
+    // Handling validation errors (from @Valid) (from DTOs or request bodies)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
+        Map<String, String> validationErrors = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(error -> error.getField(), error -> error.getDefaultMessage(),
+                        (msg1, msg2) -> msg1 + "; " + msg2));
+
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Error");
-
-        // Extract validation messages
-        Map<String, String> validationErrors = ex.getBindingResult()
-                .getFieldErrors().stream()
-                .collect(Collectors.toMap(error -> error.getField(), error -> error.getDefaultMessage()));
-
+        response.put("error", "Validation error");
         response.put("validationErrors", validationErrors);
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, String> validationErrors = ex.getConstraintViolations().stream()
+                .collect(Collectors.toMap(violation -> violation.getPropertyPath().toString(),
+                        violation -> violation.getMessage(), (msg1, msg2) -> msg1 + "; " + msg2));
+
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Error");
-
-        Map<String, String> validationErrors = ex.getConstraintViolations().stream().collect(Collectors.toMap(violation -> violation.getPropertyPath().toString(), violation -> violation.getMessage()));
-
+        response.put("error", "Validation error");
         response.put("validationErrors", validationErrors);
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -62,7 +63,12 @@ public class GlobalExceptionHandler {
     // Handle Entity Not Found errors
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+        Throwable root = ex;
+        while (root.getCause() != null) {
+            root = root.getCause();
+        }
+
+        return buildErrorResponse(root.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     // Fallback exception handler

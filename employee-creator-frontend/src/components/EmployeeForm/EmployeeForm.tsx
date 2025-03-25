@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Employee,
+  getAllValidationMessages,
   useAddEmployee,
   useFetchEmployeeById,
   useUpdateEmployee,
@@ -8,7 +9,7 @@ import {
 import { useAppSelector } from "../../redux/hooks";
 import { useForm } from "react-hook-form";
 import styles from "./EmployeeForm.module.scss";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LoadingSpinner from "../../subcomponents/LoadingSpinner/LoadingSpinner";
 
 const defaultValues: Partial<Employee> = {
@@ -31,6 +32,8 @@ const EmployeeForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const numericId = id ? parseInt(id, 10) : undefined;
+
+  const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
   const selectedEmployee = useAppSelector(
     (state) => state.employees.selectedEmployee
@@ -68,6 +71,8 @@ const EmployeeForm = () => {
   const updateEmployeeMutation = useUpdateEmployee();
 
   const onSubmit = (data: Employee) => {
+    setBackendErrors([]); // To clear out previous errors
+
     const { id, onProbation, hasWorkAnniversary, ...cleaned } = data;
 
     const filteredUpdates = Object.fromEntries(
@@ -83,13 +88,18 @@ const EmployeeForm = () => {
             navigate("/employees");
           },
           onError: (error) => {
-            console.error("Error updating employee:", error);
+            const allMessages = getAllValidationMessages(error);
+            setBackendErrors(allMessages);
           },
         }
       );
     } else {
       addEmployeeMutation.mutate(data, {
         onSuccess: () => navigate("/employees"),
+        onError: (error) => {
+          const allMessages = getAllValidationMessages(error);
+          setBackendErrors(allMessages);
+        },
       });
     }
   };
@@ -105,8 +115,21 @@ const EmployeeForm = () => {
     <div className={styles.employeeFormContainer}>
       <h2>{numericId ? "Edit Employee" : "Add New Employee"} </h2>
 
+      {backendErrors.length > 0 && (
+        <div className={styles.backendErrorList}>
+          <ul>
+            {backendErrors.map((msg, index) => (
+              <li key={index} className={styles.errorItem}>
+                {msg}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className={styles.formRow}>
+          <label>First Name</label>
           <input
             {...register("firstName", { required: true })}
             placeholder="First Name"
@@ -115,6 +138,7 @@ const EmployeeForm = () => {
         </div>
 
         <div className={styles.formRow}>
+          <label>Middle Name</label>
           <input
             {...register("middleName")}
             placeholder="Middle Name (optional)"
@@ -122,6 +146,7 @@ const EmployeeForm = () => {
         </div>
 
         <div className={styles.formRow}>
+          <label>Last Name</label>
           <input
             {...register("lastName", { required: true })}
             placeholder="Last Name"
@@ -130,6 +155,7 @@ const EmployeeForm = () => {
         </div>
 
         <div className={styles.formRow}>
+          <label>Email</label>
           <input
             {...register("email", { required: true })}
             placeholder="Email"
@@ -138,6 +164,7 @@ const EmployeeForm = () => {
         </div>
 
         <div className={styles.formRow}>
+          <label>Mobile Number</label>
           <input
             {...register("mobileNumber", { required: true })}
             placeholder="Mobile Number"
@@ -146,6 +173,7 @@ const EmployeeForm = () => {
         </div>
 
         <div className={styles.formRow}>
+          <label>Residential Address</label>
           <input
             {...register("residentialAddress")}
             placeholder="Residential Address"

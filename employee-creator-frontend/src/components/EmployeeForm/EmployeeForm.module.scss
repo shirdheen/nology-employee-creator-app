@@ -8,6 +8,25 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   font-family: "Montserrat";
 
+  .backendErrorList {
+    background-color: #ffe6e6;
+    color: #b00020;
+    border: 1px solid #b00020;
+    padding: 12px;
+    margin-bottom: 16px;
+    border-radius: 6px;
+
+    ul {
+      padding-left: 20px;
+      margin: 0;
+
+      .errorItem {
+        list-style-type: disc;
+        font-family: "Roboto";
+      }
+    }
+  }
+
   h2 {
     font-size: 2rem;
     color: #34495e;

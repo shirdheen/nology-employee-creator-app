@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import jakarta.validation.Validator;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
@@ -17,15 +19,18 @@ import com.shirdheen.employee.employee_creator_app_project.repository.EmployeeRe
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
 
 @Service
 @Transactional
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final Validator validator;
 
-    public EmployeeService(EmployeeRepository employeeRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, Validator validator) {
         this.employeeRepository = employeeRepository;
+        this.validator = validator;
     }
 
     public List<Employee> getAllEmployees() {
@@ -127,6 +132,11 @@ public class EmployeeService {
                 throw new RuntimeException("Failed to update field: " + key, e);
             }
         });
+
+        var violations = validator.validate(existingEmployee);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException("Validation failed during update", violations);
+        }
 
         return employeeRepository.save(existingEmployee);
     }
